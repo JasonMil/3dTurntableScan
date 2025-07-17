@@ -29,7 +29,12 @@ const int stepsPerRevolution = 4096;
 // 3.6 degrees corresponds to: (3.6 / 360) * 4096 = 41 steps
 const int stepSize = 41;
 
+//Start button
+const int buttonPin = 2;
+
 Stepper stepper(stepsPerRevolution, 8, 10, 9, 11); // IN1, IN3, IN2, IN4
+
+bool hasRun = false;
 
 char ssid[] = "EE-53WRTK";
 char pass[] = "3xkMhteKpKrLDPCf";
@@ -75,21 +80,26 @@ void loop() {
   
   //if  statement here for button press
   
-   for (int i = 0; i < 360 / 3.6; i++) {
-    stepper.step(stepSize);
-    // two pauses allows movement and photo to be taken
-    delay (1000)
-        if (bleKeyboard.isConnected()) {
-          Serial.println("Taking Photo");  //Up button needs to go here
-          bleKeyboard.print("Hello World!");
-          delay(5000);  // Wait 5 seconds before sending again
-      } else {
-    
-    Serial.println("Waiting for connection...");
-      }
-    
-      delay(1000); // Wait 1 second
-  
+ if (!hasRun && digitalRead(buttonPin)  == LOW )
+
+ {
+      hasRun = true;
+        for (int i = 0; i < 360 / 3.6; i++) {
+          stepper.step(stepSize);
+          // two pauses allows movement and photo to be taken
+          delay (1000)
+              if (bleKeyboard.isConnected()) {
+                delay (1000);
+                Serial.println("Taking Photo");  //Up button needs to go here
+                bleKeyboard.print("Hello World!");
+                delay(1000);  // Wait 5 seconds before sending again
+            } else {
+          
+          Serial.println("Waiting for connection...");
+            }
+        }       
+        }
+        
   //end if  button press
   /* old blynk code
   Blynk.run();
@@ -104,6 +114,9 @@ void loop() {
 
   delay(2);
 */
+
+hasRun = false; //ready for another press
+
 }
 
 
