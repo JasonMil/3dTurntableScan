@@ -17,6 +17,19 @@
 #include <ESP8266WiFi.h>  // Change for different WiFi module
 #include <BlynkSimpleEsp8266.h>  // Use appropriate library for your board
 
+#include <BleKeyboard.h>
+
+BleKeyboard bleKeyboard("ESP BLE", "lilly", 100);  // Device name, manufacturer, battery level
+
+#include <Stepper.h>
+
+// 28BYJ-48 has 64 steps per revolution * 64 gear reduction = 4096 total steps per 360°
+const int stepsPerRevolution = 4096;
+
+// 3.6 degrees corresponds to: (3.6 / 360) * 4096 = 41 steps
+const int stepSize = 41;
+
+Stepper stepper(stepsPerRevolution, 8, 10, 9, 11); // IN1, IN3, IN2, IN4
 
 char ssid[] = "EE-53WRTK";
 char pass[] = "3xkMhteKpKrLDPCf";
@@ -41,6 +54,9 @@ pinMode(STEPPER_PIN_2, OUTPUT);
 pinMode(STEPPER_PIN_3, OUTPUT);
 pinMode(STEPPER_PIN_4, OUTPUT);
 
+//Start Bluetooth
+bleKeyboard.begin();
+
 }
 
 BLYNK_WRITE(V0) {
@@ -56,6 +72,26 @@ BLYNK_WRITE(V0) {
   }
 
 void loop() {
+  
+  //if  statement here for button press
+  
+   for (int i = 0; i < 360 / 3.6; i++) {
+    stepper.step(stepSize);
+    // two pauses allows movement and photo to be taken
+    delay (1000)
+        if (bleKeyboard.isConnected()) {
+          Serial.println("Taking Photo");  //Up button needs to go here
+          bleKeyboard.print("Hello World!");
+          delay(5000);  // Wait 5 seconds before sending again
+      } else {
+    
+    Serial.println("Waiting for connection...");
+      }
+    
+      delay(1000); // Wait 1 second
+  
+  //end if  button press
+  /* old blynk code
   Blynk.run();
 
               //  OneStep(false,1);
@@ -67,7 +103,7 @@ void loop() {
 
 
   delay(2);
-
+*/
 }
 
 
