@@ -3,8 +3,8 @@
 /* Library TFT_eSPI by bodmer version 2.5.43 dont update */
 
 #define STEPPER_PIN_1 17
-#define STEPPER_PIN_2 2
-#define STEPPER_PIN_3 15
+#define STEPPER_PIN_2 15
+#define STEPPER_PIN_3 2
 #define STEPPER_PIN_4 13
 
 #include <TFT_eSPI.h>       // Hardware-specific library
@@ -16,7 +16,11 @@
 const int stepsPerRevolution = 4096;
 
 // 3.6 degrees corresponds to: (3.6 / 360) * 4096 ≈ 41 steps
-const int stepSize = 41;
+//const int stepSize = 41;
+
+// 15 degrees corresponds to: (3.6 / 360) * 4096 ≈ 41 steps
+const int stepSize = 171;
+
 
 // Photo counter
 int number = 0;
@@ -66,7 +70,7 @@ void loop() {
       tft.fillScreen(TFT_BLACK);
       tft.drawString("Taking Pictures", 10, 24);
 
-      for (int i = 0; i < 360 / 3.6; i++) {
+      for (int i = 0; i < 360 / 15 /*3.6 */; i++) {
         // Move 41 steps (3.6 degrees)
         long targetPos = stepper.currentPosition() + stepSize;
         stepper.moveTo(targetPos);
@@ -84,9 +88,9 @@ void loop() {
 
         // Uncomment when ready to trigger phone camera
         //bleKeyboard.write(KEY_MEDIA_VOLUME_UP);
-          bleKeyboard.press(KEY_MEDIA_VOLUME_UP);
-          delay(100);  // small delay so the phone registers it
-          bleKeyboard.release(KEY_MEDIA_VOLUME_UP);
+          //bleKeyboard.press(KEY_MEDIA_VOLUME_UP);
+          //delay(100);  // small delay so the phone registers it
+          //bleKeyboard.release(KEY_MEDIA_VOLUME_UP);
 
         number++;
         delay(1000);  // wait before next photo
