@@ -2,15 +2,36 @@
 /* board manager esp32 by Espressif Systems use version 3.3.0 dont update */
 /* Library TFT_eSPI by bodmer version 2.5.43 dont update */
 
-#define STEPPER_PIN_1 17
-#define STEPPER_PIN_2 15
-#define STEPPER_PIN_3 2
-#define STEPPER_PIN_4 13
-
+/*orig
 #include <TFT_eSPI.h>       // Hardware-specific library
 #include <SPI.h>
 #include <BleKeyboard.h>
 #include <AccelStepper.h>
+
+*/
+
+
+#include <LiquidCrystal_I2C.h>
+#include <AccelStepper.h>       //#include <Stepper.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // I2C address and LCD size
+
+
+//Stepper Motor
+#define STEPPER_PIN_1  D0    //orig 17
+#define STEPPER_PIN_2 D3     //15
+#define STEPPER_PIN_3 D4     //2
+#define STEPPER_PIN_4 D8    //13
+
+int potValue = 0;
+bool buttonState = false;
+
+
+// Pin assignments
+#define POT_PIN A0        // analog input (0–1V range)
+#define BUTTON_PIN D6     // button between D6 and GND
+#define RELAY_PIN D7      // relay IN pin
+
+
 
 // 28BYJ-48 has 64 steps per rev * 64 gear reduction = 4096 steps per revolution
 const int stepsPerRevolution = 4096;
@@ -26,11 +47,13 @@ const int stepSize = 171;
 int number = 0;
 
 // Start button
-const int buttonPin = 21;
+const int buttonPin = D6//21;
 bool lastButtonState = HIGH;
 
-TFT_eSPI tft = TFT_eSPI();
-BleKeyboard bleKeyboard("ESP BLE", "lilly", 100);
+/*TFT_eSPI tft = TFT_eSPI();  -- No longer using
+BleKeyboard bleKeyboard("ESP BLE", "lilly", 100);  --no longer using
+*/
+
 
 // Create AccelStepper object (FULL4WIRE, pin1, pin3, pin2, pin4 order is important for 28BYJ-48)
 AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_PIN_1, STEPPER_PIN_3, STEPPER_PIN_2, STEPPER_PIN_4);
@@ -38,8 +61,8 @@ AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_PIN_1, STEPPER_PIN_3, STEP
 void setup(void) {
   pinMode(buttonPin, INPUT_PULLUP);
 
-  bleKeyboard.begin();
-  Serial.begin(115200);
+  --bleKeyboard.begin();
+  erial.begin(115200);
 
   tft.init();
   tft.fillScreen(TFT_BLACK);
@@ -48,17 +71,24 @@ void setup(void) {
   stepper.setMaxSpeed(1000);    // steps per second
   stepper.setAcceleration(200); // smoother motion
 
+  lcd.init();
+  lcd.backlight();
+
+  pinMode(POT_PIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);  // Button wired to GND when pressed
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
+
+  lcd.setCursor(0, 0);
+  lcd.print("Potentiometer:");
+
+    stepper.setSpeed(10);  // RPM
+
+
+
   delay(5000);
 
-  if (bleKeyboard.isConnected()) {
-    tft.drawString("Bluetooth OK", 10, 10);
-    tft.drawString("Press button to start", 10, 24);
-    delay(5000);
-  } else {
-    tft.fillScreen(TFT_BLACK);
-    tft.drawString("Bluetooth Fail", 10, 10);
-    tft.drawString("Check Phone is bluetooth enabled", 10, 24);
-  }
+ 
 }
 
 void loop() {
